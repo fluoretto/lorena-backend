@@ -1,0 +1,13 @@
+node_modules
+build
+secrets
+docs
+docker
+ormconfig.json
+.env.dev
+.env.prod
+.env.test
+.env.example
+.env
+data
+.github

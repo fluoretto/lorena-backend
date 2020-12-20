@@ -1,0 +1,58 @@
+version: "3.8"
+
+networks:
+  klura_network_dev:
+    driver: bridge
+
+services:
+  redis:
+    image: "redis:6.0"
+    container_name: klura_redis_dev
+    ports:
+      - "6379:6379"
+    restart: on-failure
+    networks:
+      - klura_network_dev
+
+  postgres:
+    image: "postgres:13.1"
+    container_name: klura_postgres_dev
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    volumes:
+      - ../data/dev/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+    networks:
+      - klura_network_dev
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    image: klura_backend:dev
+    container_name: klura_backend_dev
+    command: yarn run dev
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
+      - postgres
+    restart: on-failure
+    volumes:
+      - ..:/usr/app/backend
+    environment:
+      NETWORK: Klura
+      SERVER: Local
+      NODE_ENV: development
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+    networks:
+      - klura_network_dev
